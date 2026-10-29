@@ -1,0 +1,72 @@
+name: CIIP
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "ciip/**"
+      - ".github/workflows/ciip.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "ciip/**"
+      - ".github/workflows/ciip.yml"
+
+jobs:
+  backend:
+    name: Backend (lint, migrations, tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ciip/backend
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ciip
+          POSTGRES_PASSWORD: ciip
+          POSTGRES_DB: ciip
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ciip" --health-interval 5s --health-retries 10
+    env:
+      CIIP_DATABASE_URL: postgresql+psycopg://ciip:ciip@localhost:5432/ciip
+      CIIP_REDIS_URL: ""
+      CIIP_AI_USE_OLLAMA: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt ruff
+      - run: ruff check .
+      - name: Migrations apply, roll back and match the models
+        run: |
+          alembic upgrade head
+          alembic check
+          alembic downgrade base
+      - name: Tests on PostgreSQL
+        env:
+          CIIP_TEST_DATABASE_URL: postgresql+psycopg://ciip:ciip@localhost:5432/ciip
+        run: pytest
+
+  frontend:
+    name: Frontend (typecheck, tests, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ciip/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: ciip/frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build

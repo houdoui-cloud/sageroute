@@ -9,6 +9,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.kv import get_kv
+from app.core.labels import SEVERITY_FR, fr
 from app.core.rbac import Perm
 from app.db import get_db
 from app.deps import Ctx, require, scoped_get, scoped_query
@@ -90,7 +91,7 @@ def create_incident(db: Session, ctx: Ctx, body: IncidentCreate) -> Incident:
     db.add(inc)
     db.flush()
     svc.apply_sla(inc)
-    svc.add_event(db, inc, ctx.user, "created", f"Incident créé ({inc.severity})")
+    svc.add_event(db, inc, ctx.user, "created", f"Incident créé (sévérité {fr(SEVERITY_FR, inc.severity)})")
     audit.record(db, "incident.create", actor=ctx.user, organization_id=ctx.org_id,
                  target_type="incident", target_id=inc.id, ip=ctx.ip,
                  details={"reference": inc.reference, "severity": inc.severity})

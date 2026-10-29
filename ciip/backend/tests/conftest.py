@@ -3,7 +3,8 @@ import tempfile
 
 # Configure before the app is imported: isolated DB, no Redis, no LLM.
 _tmp = tempfile.mkdtemp(prefix="ciip-test-")
-os.environ.setdefault("CIIP_DATABASE_URL", os.environ.get("CIIP_TEST_DATABASE_URL", f"sqlite:///{_tmp}/test.db"))
+# Always override: the suite drops every table, so it must never touch a dev database.
+os.environ["CIIP_DATABASE_URL"] = os.environ.get("CIIP_TEST_DATABASE_URL", f"sqlite:///{_tmp}/test.db")
 os.environ["CIIP_REDIS_URL"] = ""
 os.environ["CIIP_AI_USE_OLLAMA"] = "false"
 

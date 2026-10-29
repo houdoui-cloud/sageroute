@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.incidents import invalidate_stats
@@ -21,7 +21,7 @@ def types(_: Ctx = Depends(require(Perm.DECISION_REQUEST))) -> list[dict]:
 
 
 @router.get("", response_model=list[DecisionOut])
-def list_decisions(status_: str | None = None, ctx: Ctx = Depends(require(Perm.DECISION_REQUEST)),
+def list_decisions(status_: str | None = Query(default=None, alias="status"), ctx: Ctx = Depends(require(Perm.DECISION_REQUEST)),
                    db: Session = Depends(get_db)) -> list[DecisionRequest]:
     stmt = scoped_query(DecisionRequest, ctx)
     if status_:

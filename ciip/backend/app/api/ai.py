@@ -1,10 +1,11 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.api.incidents import invalidate_stats
+from app.core.labels import CATEGORY_FR, SEVERITY_FR, fr
 from app.core.rbac import Perm
 from app.db import get_db
 from app.deps import Ctx, require, scoped_get, scoped_query
@@ -78,7 +79,7 @@ def ask(body: AskIn, ctx: Ctx = Depends(require(Perm.AI_USE)), db: Session = Dep
 
 
 @router.get("/ai/suggestions", response_model=list[SuggestionOut])
-def list_suggestions(incident_id: uuid.UUID | None = None, status_: str | None = None,
+def list_suggestions(incident_id: uuid.UUID | None = None, status_: str | None = Query(default=None, alias="status"),
                      ctx: Ctx = Depends(require(Perm.AI_USE)), db: Session = Depends(get_db)) -> list[AiSuggestion]:
     stmt = scoped_query(AiSuggestion, ctx)
     if incident_id:
@@ -110,7 +111,7 @@ def review(suggestion_id: uuid.UUID, body: ReviewIn, ctx: Ctx = Depends(require(
                 pb = db.scalar(select(Playbook).where(Playbook.name == pb_name, Playbook.organization_id.is_(None)))
                 inc.playbook_id = pb.id if pb else None
             inc_svc.add_event(db, inc, ctx.user, "ai_validated",
-                              f"Triage IA validé : {inc.category} / {inc.severity}",
+                              f"Triage IA validé : {fr(CATEGORY_FR, inc.category)} / sévérité {fr(SEVERITY_FR, inc.severity)}",
                               suggestion_id=str(s.id), before=before)
             applied = {"incident": inc.reference, "before": before,
                        "after": {"category": inc.category, "severity": inc.severity}}

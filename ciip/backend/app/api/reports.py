@@ -6,6 +6,7 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
 from app.core.kv import get_kv
+from app.core.labels import CATEGORY_FR, CHANNEL_FR, SEVERITY_FR, STATUS_FR, fr
 from app.core.rbac import Perm
 from app.db import get_db
 from app.deps import Ctx, require
@@ -13,9 +14,6 @@ from app.models import aware
 from app.services import audit, stats
 
 router = APIRouter(tags=["statistiques et rapports"])
-
-_SEV_FR = {"critical": "Critique", "high": "Élevée", "medium": "Moyenne", "low": "Faible"}
-
 
 @router.get("/analytics/dashboard")
 def dashboard(ctx: Ctx = Depends(require(Perm.DASHBOARD_READ)), db: Session = Depends(get_db)) -> dict:
@@ -48,7 +46,9 @@ def _fmt_minutes(value: float | None) -> str:
         return "n/d"
     if value < 120:
         return f"{value:.0f} min"
-    return f"{value / 60:.1f} h"
+    if value < 60 * 48:
+        return f"{value / 60:.1f} h"
+    return f"{value / 1440:.1f} j"
 
 
 @router.get("/analytics/executive", response_class=PlainTextResponse)
@@ -77,16 +77,16 @@ def executive(date_from: datetime | None = None, date_to: datetime | None = None
         f"- Signalements en attente de tri : **{t['reports_pending']}**",
         "",
         "## Répartition par sévérité",
-        *[f"- {_SEV_FR.get(k, k)} : {v}" for k, v in s["by_severity"].items()],
+        *[f"- {fr(SEVERITY_FR, k).capitalize()} : {v}" for k, v in s["by_severity"].items()],
         "",
         "## Principales menaces (catégories)",
-        *[f"{n}. {k} — {v}" for n, (k, v) in enumerate(s["by_category"].items(), 1)],
+        *[f"{n}. {fr(CATEGORY_FR, k)} — {v}" for n, (k, v) in enumerate(s["by_category"].items(), 1)],
         "",
         "## Canaux de signalement",
-        *[f"- {k} : {v}" for k, v in s["reports_by_channel"].items()],
+        *[f"- {fr(CHANNEL_FR, k)} : {v}" for k, v in s["reports_by_channel"].items()],
         "",
         "## Incidents majeurs en cours",
-        *([f"- {i['reference']} — {i['title']} ({i['status']})" for i in s["recent_critical"]] or ["- Aucun"]),
+        *([f"- {i['reference']} — {i['title']} ({fr(STATUS_FR, i['status'])})" for i in s["recent_critical"]] or ["- Aucun"]),
         "",
         "## Points d'attention",
         f"- Décisions sensibles en attente d'approbation : {t['decisions_pending']}",
