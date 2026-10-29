@@ -1,0 +1,18 @@
+[project]
+name = "ciip-backend"
+version = "1.0.0"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+# B008: FastAPI Depends() in defaults is idiomatic; UP046/47: keep Generic for Pydantic clarity
+ignore = ["B008", "E501", "UP046", "UP047"]

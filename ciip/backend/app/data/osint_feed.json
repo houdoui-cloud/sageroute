@@ -1,0 +1,75 @@
+[
+  {
+    "id": "ALERTE-2026-041",
+    "source": "CERT-Démo (fictif)",
+    "title": "Campagne de SMS frauduleux usurpant des services de mobile money",
+    "summary": "Des SMS invitent les abonnés à « confirmer leur compte » sur un faux portail et à saisir leur code secret. Plusieurs pays d'Afrique de l'Ouest sont ciblés. Données fictives à des fins de démonstration.",
+    "severity": "high",
+    "tags": ["mobile_money_fraud", "smishing", "afrique-ouest"],
+    "region": "Afrique de l'Ouest",
+    "published_at": "2026-10-20T08:00:00+00:00",
+    "indicators": [
+      {"type": "domain", "value": "momo-verification.example", "confidence": 80},
+      {"type": "url", "value": "http://momo-verification.example/compte/confirmer", "confidence": 80},
+      {"type": "phone", "value": "+22500000001", "confidence": 70}
+    ]
+  },
+  {
+    "id": "ALERTE-2026-042",
+    "source": "CERT-Démo (fictif)",
+    "title": "Rançongiciel « KalaLock » ciblant des établissements financiers",
+    "summary": "Accès initial via des VPN non corrigés, puis chiffrement des serveurs et des sauvegardes en ligne. Extension .kalalock. Souche fictive, indicateurs issus des plages de documentation.",
+    "severity": "critical",
+    "tags": ["ransomware", "finance", "vpn"],
+    "region": "Afrique centrale",
+    "published_at": "2026-10-22T10:30:00+00:00",
+    "indicators": [
+      {"type": "ipv4", "value": "203.0.113.45", "confidence": 85},
+      {"type": "ipv4", "value": "203.0.113.46", "confidence": 75},
+      {"type": "sha256", "value": "3f786850e387550fdab836ed7e6dc881de23001b3f786850e387550fdab836ed", "confidence": 90},
+      {"type": "domain", "value": "kalalock-pay.example", "confidence": 80}
+    ]
+  },
+  {
+    "id": "OSINT-2026-117",
+    "source": "Veille OSINT Démo",
+    "title": "Base de données d'une administration fictive proposée sur un forum",
+    "summary": "Un acteur prétend vendre 200 000 enregistrements d'une administration fictive de Kalanda. Authenticité non confirmée.",
+    "severity": "high",
+    "tags": ["data_breach", "secteur-public", "forum"],
+    "region": "Afrique de l'Est",
+    "published_at": "2026-10-24T15:00:00+00:00",
+    "indicators": [
+      {"type": "email", "value": "vendeur-donnees@leakmarket.example", "confidence": 50},
+      {"type": "domain", "value": "leakmarket.example", "confidence": 60}
+    ]
+  },
+  {
+    "id": "OSINT-2026-118",
+    "source": "Veille OSINT Démo",
+    "title": "Faux portail de connexion d'une banque fictive",
+    "summary": "Un site imitant la page de connexion de la Banque Fictive du Sahel collecte les identifiants de banque en ligne.",
+    "severity": "medium",
+    "tags": ["phishing", "finance"],
+    "region": "Sahel",
+    "published_at": "2026-10-25T09:15:00+00:00",
+    "indicators": [
+      {"type": "domain", "value": "bfs-secure-login.example", "confidence": 85},
+      {"type": "ipv4", "value": "198.51.100.23", "confidence": 70}
+    ]
+  },
+  {
+    "id": "ALERTE-2026-043",
+    "source": "CERT-Démo (fictif)",
+    "title": "Vague de dénis de service contre des sites gouvernementaux",
+    "summary": "Attaques volumétriques revendiquées par un groupe hacktiviste fictif, durée moyenne de 2 heures.",
+    "severity": "medium",
+    "tags": ["ddos", "secteur-public", "hacktivisme"],
+    "region": "Afrique du Nord",
+    "published_at": "2026-10-27T12:00:00+00:00",
+    "indicators": [
+      {"type": "ipv4", "value": "192.0.2.77", "confidence": 60},
+      {"type": "ipv4", "value": "192.0.2.78", "confidence": 60}
+    ]
+  }
+]
