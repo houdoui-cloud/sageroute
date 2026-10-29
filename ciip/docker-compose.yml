@@ -1,0 +1,65 @@
+# Cyber Incident & Intelligence Platform — V1 demonstrator stack.
+#   cp .env.example .env && docker compose up --build
+# UI: http://localhost:8080   API docs: http://localhost:8080/api/docs
+
+services:
+  db:
+    image: postgres:16.4-alpine
+    environment:
+      POSTGRES_DB: ciip
+      POSTGRES_USER: ciip
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ciip-dev-password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ciip -d ciip"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.4.1-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  ollama:
+    image: ollama/ollama:0.5.7
+    volumes:
+      - ollama:/root/.ollama
+
+  # One-shot: download the local model. The API falls back to its rules
+  # engine until the model is available, so nothing waits on this.
+  ollama-pull:
+    image: ollama/ollama:0.5.7
+    depends_on: [ollama]
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["/bin/sh", "-c", "sleep 3 && ollama pull ${CIIP_OLLAMA_MODEL:-llama3.2:3b}"]
+    restart: "no"
+
+  backend:
+    build: ./backend
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      CIIP_DATABASE_URL: postgresql+psycopg://ciip:${POSTGRES_PASSWORD:-ciip-dev-password}@db:5432/ciip
+      CIIP_REDIS_URL: redis://redis:6379/0
+      CIIP_OLLAMA_URL: http://ollama:11434
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      ollama: { condition: service_started }
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      backend: { condition: service_healthy }
+
+volumes:
+  pgdata:
+  ollama:
